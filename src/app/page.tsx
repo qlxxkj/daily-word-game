@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { supabase } from "@/../lib/supabaseClient"
+import { createSupabaseClient } from "@/../lib/supabaseClient" // 修改导入
 
 export default function Home() {
     const [todayWord, setTodayWord] = useState("")
@@ -10,20 +10,38 @@ export default function Home() {
     const [finished, setFinished] = useState(false)
 
     useEffect(() => {
+        // 在 useEffect 内部创建客户端
+        const supabase = createSupabaseClient()
+
         const fetchTodayWord = async () => {
-            const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
-            const { data } = await supabase
-                .from("games")
-                .select("answer")
-                .eq("game_date", today)
-                .single()
-            if (data) setTodayWord(data.answer)
+            try {
+                const supabase = createSupabaseClient()
+                const today = new Date().toISOString().slice(0, 10)
+                const { data, error } = await supabase
+                    .from("games")
+                    .select("answer")
+                    .eq("game_date", today)
+                    .single()
+
+                if (error) {
+                    console.error("Error fetching today's word:", error)
+                    return
+                }
+
+                if (data) setTodayWord(data.answer)
+            } catch (error) {
+                console.error("Unexpected error:", error)
+            }
         }
         fetchTodayWord()
     }, [])
 
     const checkGuess = async () => {
         if (!guess) return
+
+        // 在函数内部创建客户端
+        const supabase = createSupabaseClient()
+
         if (guess.toLowerCase() === todayWord.toLowerCase()) {
             setMessage("🎉 恭喜答对！")
             setFinished(true)
