@@ -1,1 +1,1 @@
-# Daily-work-game
+# Daily-word-game
